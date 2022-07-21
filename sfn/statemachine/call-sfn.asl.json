@@ -1,0 +1,45 @@
+{
+  "Comment": "Execution of step functions sequentially",
+  "StartAt": "Step Functions Execution 1",
+  "States": {
+    "Step Functions Execution 1": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::states:startExecution.sync:2",
+      "Parameters": {
+        "StateMachineArn": "${FirstSfnArn}",
+        "Input": {
+          "StatePayload": "Payload 1",
+          "NeedCallback": false,
+          "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
+        }
+      },
+      "Next": "Step Functions Execution 2"
+    },
+    "Step Functions Execution 2": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::states:startExecution.sync:2",
+      "Parameters": {
+        "StateMachineArn": "${SecondSfnArn}",
+        "Input": {
+          "StatePayload": "Payload 2",
+          "NeedCallback": false,
+          "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
+        }
+      },
+      "Next": "Step Functions Execution 3"
+    },
+    "Step Functions Execution 3": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::states:startExecution.sync:2",
+      "Parameters": {
+        "StateMachineArn": "${LastSfnArn}",
+        "Input": {
+          "StatePayload": "Payload 3",
+          "NeedCallback": false,
+          "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
+        }
+      },
+      "End": true
+    }
+  }
+}

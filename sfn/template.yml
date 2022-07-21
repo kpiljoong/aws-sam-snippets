@@ -1,0 +1,66 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Resources:
+  CallSfnStateMachine:
+    Type: AWS::Serverless::StateMachine
+    Properties:
+      Policies:
+        - StepFunctionsExecutionPolicy:
+            StateMachineName: !GetAtt FirstStateMachine.Name
+        - StepFunctionsExecutionPolicy:
+            StateMachineName: !GetAtt SecondStateMachine.Name
+        - StepFunctionsExecutionPolicy:
+            StateMachineName: !GetAtt LastStateMachine.Name
+        # Not a good practice
+        - "CloudWatchEventsFullAccess"
+      DefinitionUri: statemachine/call-sfn.asl.json
+      DefinitionSubstitutions:
+        FirstSfnArn: !GetAtt FirstStateMachine.Arn
+        SecondSfnArn: !GetAtt SecondStateMachine.Arn
+        LastSfnArn: !GetAtt LastStateMachine.Arn
+  FirstStateMachine:
+    Type: AWS::Serverless::StateMachine
+    Properties:
+      Role: !GetAtt NoOpWorkflowRole.Arn
+      DefinitionUri: statemachine/first-sfn.asl.json
+  SecondStateMachine:
+    Type: AWS::Serverless::StateMachine
+    Properties:
+      Role: !GetAtt NoOpWorkflowRole.Arn
+      DefinitionUri: statemachine/second-sfn.asl.json
+  LastStateMachine:
+    Type: AWS::Serverless::StateMachine
+    Properties:
+      Role: !GetAtt NoOpWorkflowRole.Arn
+      DefinitionUri: statemachine/last-sfn.asl.json
+  StateMachineExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - !Sub states.${AWS::Region}.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: MyStateMachineExecution
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: states:StartExecution
+                Resource:
+                  - !Sub 'arn:${AWS::Partition}:states:${AWS::Region}:${AWS::AccountId}:stateMachine:*'
+  NoOpWorkflowRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - !Sub states.${AWS::Region}.amazonaws.com
+            Action: sts:AssumeRole

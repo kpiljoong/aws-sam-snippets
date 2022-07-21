@@ -1,0 +1,10 @@
+{
+  "Comment": "Second state machine",
+  "StartAt": "Do Nothing",
+  "States": {
+    "Do Nothing": {
+      "Type": "Pass",
+      "End": true
+    }
+  }
+}
