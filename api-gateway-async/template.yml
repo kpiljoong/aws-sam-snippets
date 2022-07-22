@@ -43,4 +43,7 @@ Resources:
                 passthroughBehavior: "when_no_match"
                 requestParameters:
                   "integration.request.header.X-Amz-Invocation-Type": "'Event'"
+                responses:
+                  default:
+                    statusCode: 200
                 uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${BasicLambdaFn.Arn}/invocations"
